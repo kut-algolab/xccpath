@@ -11,12 +11,15 @@ More information is available [here](https://www.al.info.kochi-tech.ac.jp/papers
 
 ## Requirements
 * python3
-* c++ compiler supporting c++17 (gcc)
-* make
+* c++ compiler supporting c++17 (gcc, clang)
+* cmake 3.15
 
 ## Compile solver
 ```bash
-$ make
+$ mkdir build
+$ cd build
+$ cmake ..
+$ cmake --build .
 ```
 ## Make an XCC instance
 ```bash
