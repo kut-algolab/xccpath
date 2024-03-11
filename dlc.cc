@@ -382,6 +382,11 @@ int DLC::select_item() {
   // if (0 == nodes[i].top) return -1;
   // return i;
   // if (0 == items[0].rlink) return -1;
+  int ptr = items[0].rlink;
+  while (0 != ptr) {
+    if (nodes[ptr].top == 0) return ptr;
+    ptr = items[ptr].rlink;
+  }
   return items[0].rlink;
 }
 
@@ -571,20 +576,23 @@ unsigned DLC::compute_signature() {
   int off = 1, sig, offset;
 
   if (cacheptr + sigsiz >= CACHESIZE) exit(-1);
-  for (int k = items[N1+N2+1].llink; k != N1+N2+1; k = items[k].llink) {
-    if (0 == nodes[k].top) continue;
-    sig = items[k].sig;
-    //printf("k = %d, sig = %d, offset = %d\n", k, sig, offset);
-    offset = siginx[sig].wd;
-    while (off < offset) {
-      cache[cacheptr+off] = sigacc | SIGNBIT;
-      // printf("(S) cacheptr = %u, off = %d, sigacc | SIGNBIT = %llu\n", cacheptr, off, sigacc | SIGNBIT);
-      ++off;
-      sigacc = 0;
+  if (0 != N2) {
+    for (int k = N1+N2; k != N1+N2+1; k = items[k].llink) {
+      //  for (int k = items[N1+N2+1].llink; k != N1+N2+1; k = items[k].llink) {
+      if (0 == nodes[k].top) continue;
+      sig = items[k].sig;
+      //printf("k = %d, sig = %d, offset = %d\n", k, sig, offset);
+      offset = siginx[sig].wd;
+      while (off < offset) {
+        cache[cacheptr+off] = sigacc | SIGNBIT;
+        // printf("(S) cacheptr = %u, off = %d, sigacc | SIGNBIT = %llu\n", cacheptr, off, sigacc | SIGNBIT);
+        ++off;
+        sigacc = 0;
+      }
+      sig += nodes[k].color;
+      sighash += siginx[sig].hash;
+      sigacc += (long long)siginx[sig].code << siginx[sig].shift;
     }
-    sig += nodes[k].color;
-    sighash += siginx[sig].hash;
-    sigacc += (long long)siginx[sig].code << siginx[sig].shift;
   }
   for (int k = items[0].llink; k != 0 ; k = items[k].llink) {
     sig = items[k].sig;
